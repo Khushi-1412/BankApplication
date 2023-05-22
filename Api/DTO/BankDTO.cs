@@ -6,7 +6,6 @@
             string Email,
             string Phone,
             string Address,
-            long AccountNumber,
             int Balance
         );
     

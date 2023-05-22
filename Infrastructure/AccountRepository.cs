@@ -28,12 +28,14 @@ namespace BankApplication.Infrastructure
                 return await _appDbContext.Banks.Where(b => b.Id == id).SingleOrDefaultAsync();
         }
 
+       
         public async Task<IEnumerable<BankAccount>> List()
         {
             return await _appDbContext.Banks
-                .ToListAsync(); ;
-        }
+                .ToListAsync();
+         }
 
+       
         public async Task<BankAccount> Add(BankAccount bankAccount)
         {
             var account = _appDbContext.Banks.Add(bankAccount).Entity;

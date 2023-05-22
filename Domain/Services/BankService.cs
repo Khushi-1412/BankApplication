@@ -15,14 +15,7 @@ namespace BankApplication.Domain.Services
         {
             _accountRepository = accountRepository;
         }
-        public BankAccount CreateBank(string name, string email, string phone, string address, long accountNumber, int balance = 0)
-        {
-           
-            var bank = new BankAccount(name, email, phone, address, accountNumber, balance);
-            _accountRepository.Add(bank);
 
-            return bank;
-        }
 
         //public void Deposit(Guid accountId, int amount)
         //{

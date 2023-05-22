@@ -19,6 +19,12 @@ namespace BankApplication.Api.Controller
             this._accountRepository = accountRepository;
 
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BankAccount>>> Index()
+        {
+            var accounts = await _accountRepository.List();
+            return Ok(accounts);
+        }
       
         [HttpGet("{id}")]
         public async Task<ActionResult<BankAccount?>> GetUser(Guid id)
@@ -30,7 +36,7 @@ namespace BankApplication.Api.Controller
         [HttpPost]
         public async Task<IActionResult> Post(CreateBankDTO dto)
         {
-            BankAccount bank = new(dto.Name, dto.Email, dto.Phone, dto.Address,dto.AccountNumber, dto.Balance);
+            BankAccount bank = new BankAccount(dto.Name, dto.Email, dto.Phone, dto.Address, dto.Balance);
         
             await  _accountRepository.Add(bank);
             return CreatedAtAction(nameof(GetUser),
@@ -65,7 +71,7 @@ namespace BankApplication.Api.Controller
         {
             var bank = await _accountRepository.GetById(id);
             if (bank is null) return NotFound();
-            await _accountRepository.Update(bank);
+            await _accountRepository.Delete(bank);
             return NoContent();
 
 
