@@ -5,73 +5,74 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace BankApplication.Domain.Models
 {
     public class BankAccount : Entity
     {
         public BankAccount() { }
-        //public BankAccount(string name, string email, string phone, string address, string accountNumber, int balance)
-        //{
-            
-        //    Name = name;
-        //    Email = email;
-        //    Phone = phone;
-        //    Address = address;
-        //    AccountNumber = accountNumber;
-        //    Balance = balance;
-        //}
+    
 
-        public BankAccount(string name, string email, string phone, string address, int balance)
+        public BankAccount(string accountHolderName, string email, string phone, string gender, int age,string address, decimal accountBalance)
         {
-            Name = name;
+            AccountHolderName = accountHolderName;
+
             Email = email;
             Phone = phone;
+            Gender = gender;
+            Age= age;
             Address = address;
-            Balance = balance;
+            AccountBalance = accountBalance;
         }
 
-        public string Name { get; private set; } 
-        public string Email { get; private set; } 
+        public string AccountHolderName { get; private set; }
+        public string AccountNumber { get; private set; } = Generator.GetRandomNumbers(10);       
+        public string Email { get; private set; }
         public string Phone { get; private set; }
+        public string Gender { get; private set; }
+        public int Age { get; private set; }   
         public string Address { get; private set; }
-        public string AccountNumber { get; private set; } = Generator.GetRandomNumbers(8);
-        public int Balance { get; private set; }
-     
-        private void UpdateBalance(int updatedBalance)
+        public decimal AccountBalance { get; private set; }
+      
+
+        private void UpdateBalance(decimal updatedBalance)
         {
             if (updatedBalance < 0m)
                 throw new InvalidOperationException("$ Enter valid amount");
 
-            Balance = updatedBalance;
+            AccountBalance = updatedBalance;
         }
-        public void Deposit(int amount)
+        public void Deposit(decimal amount)
         {
             if (amount <= 0m)
             {
-                throw new InvalidOperationException("$ Amount entered is less than 0");
+                throw new InvalidOperationException("Amount entered is less than 0");
             }
             
-                UpdateBalance(Balance+amount);
-          }
-        public void Withdraw(int amount)
+            UpdateBalance(AccountBalance + amount);
+        }
+        public void Withdraw(decimal amount)
         {
-            if(Balance < amount)
+            
+            if (AccountBalance < amount)
             {
-                throw new InvalidOperationException("$Not enough monet to withdraw");
+                throw new InvalidOperationException($"Not enough money to withdraw. Balance :{AccountBalance}");
             }
             if (amount <= 0)
             {
-                throw new InvalidOperationException("Not valid");
+                throw new InvalidOperationException("Amount entered is less than 0");
             }
-            UpdateBalance(Balance - amount);
+            UpdateBalance(AccountBalance - amount);
         }
+       
 
 
 
-        }
+    }
 
 }

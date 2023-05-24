@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace BankApplication.Domain.Services
 {
@@ -17,22 +18,35 @@ namespace BankApplication.Domain.Services
         }
 
 
-        //public void Deposit(Guid accountId, int amount)
-        //{
-        //    var bank = _accountRepository.GetById(accountId);
-        //    bank.Balance += amount;
-        //    _accountRepository.Update(bank);
-        //}
+        public async void Transfer(Guid sourceAccountId, Guid destinationAccountId, decimal amount)
+        {
+            var SourceAccount = await _accountRepository.GetById(sourceAccountId);
+            var DestinationAccount = await _accountRepository.GetById(destinationAccountId);
 
-        //public void Withdraw(Guid accountId, int amount)
-        //{
-        //    var bank = _accountRepository.GetById(accountId);
-        //    if (bank.Balance < amount)
-        //    {
-        //        throw new InvalidOperationException("Insufficient balance");
-        //    }
-        //    bank.Balance -= amount;
-        //    _accountRepository.Update(bank);
-        //}
+            if (SourceAccount is null)
+                throw new InvalidOperationException("The Source Account Number is Invalid.");
+
+            if (DestinationAccount is null)
+                throw new InvalidOperationException("The Destination Account Number is Invalid.");
+
+            using var txnScope = new TransactionScope(TransactionScopeOption.RequiresNew);
+            try
+            {
+                SourceAccount.Withdraw(amount);
+                DestinationAccount.Deposit(amount);
+
+                txnScope.Complete();
+            }
+            catch (Exception ex)
+            {
+                txnScope.Dispose();
+
+                throw new Exception(ex.Message);
+                throw new Exception("Transaction Failed");
+            }
+           
+
+
+        }
     }
 }

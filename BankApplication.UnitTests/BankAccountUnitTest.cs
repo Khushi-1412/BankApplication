@@ -11,7 +11,7 @@ namespace BankApplication.UnitTests
             var account = new BankAccount();
             var amount = 1000;
             account.Deposit(1000);
-            Assert.Equal(amount, account.Balance);
+            Assert.Equal(amount, account.AccountBalance);
 
         }
 

@@ -1,12 +1,16 @@
-﻿namespace BankApplication.Api.DTO
+﻿using System.Reflection.Emit;
+
+namespace BankApplication.Api.DTO
 {
-   
-        public record CreateBankDTO(
-            string Name,
-            string Email,
-            string Phone,
-            string Address,
-            int Balance
-        );
-    
+
+    public record CreateBankDTO(
+         string AccountHolderName,
+         string Email,
+         string Phone,
+         string Gender,
+         int Age,
+         string Address,
+         decimal AccountBalance
+    );
+
 }

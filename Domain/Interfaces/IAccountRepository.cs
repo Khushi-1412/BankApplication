@@ -10,6 +10,8 @@ namespace BankApplication.Domain.Interfaces
     public interface IAccountRepository : IRepository<BankAccount>
     {
         Task<BankAccount?> GetById(Guid id);
+
+        Task<BankAccount?> GetByAccount(string accountNumber);
         Task<IEnumerable<BankAccount>> List();
         Task<BankAccount> Add(BankAccount bankAccount);
         Task Update(BankAccount bankAccount);

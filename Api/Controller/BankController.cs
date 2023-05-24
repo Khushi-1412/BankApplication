@@ -19,54 +19,74 @@ namespace BankApplication.Api.Controller
             this._accountRepository = accountRepository;
 
         }
-        [HttpGet]
+        [HttpGet("list")]
         public async Task<ActionResult<IEnumerable<BankAccount>>> Index()
         {
             var accounts = await _accountRepository.List();
             return Ok(accounts);
         }
-      
-        [HttpGet("{id}")]
-        public async Task<ActionResult<BankAccount?>> GetUser(Guid id)
+
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<BankAccount?>> GetUser(Guid id)
+        //{
+        //    var bank =await _accountRepository.GetById(id);
+        //    if (bank == null) return NotFound();
+        //    return bank;
+        //}
+
+        [HttpGet("accountNumber")]
+        public async Task<ActionResult<BankAccount?>> GetUserAccount(string accountNumber)
         {
-            var bank =await _accountRepository.GetById(id);
+            var bank = await _accountRepository.GetByAccount(accountNumber);
+            if (bank == null) return NotFound();
             return bank;
         }
         [Route("create")]
         [HttpPost]
         public async Task<IActionResult> Post(CreateBankDTO dto)
         {
-            BankAccount bank = new BankAccount(dto.Name, dto.Email, dto.Phone, dto.Address, dto.Balance);
-        
-            await  _accountRepository.Add(bank);
-            return CreatedAtAction(nameof(GetUser),
-                new { id = bank.Id }, 
-                bank); 
+            BankAccount bank = new BankAccount(dto.AccountHolderName, dto.Email, dto.Phone, dto.Gender, dto.Age, dto.Address, dto.AccountBalance);
+
+            await _accountRepository.Add(bank);
+            return CreatedAtAction
+                (
+                nameof(GetUserAccount),
+                new { id = bank.Id },
+                bank
+                );
         }
-        [HttpPut("{id}/deposit")]
-        public async Task<IActionResult> DepositMoney(Guid id, int amount)
+        [HttpPut("{accno}/deposit")]
+        public async Task<IActionResult> DepositMoney(string accno, decimal amount)
         {
-            var b = await _accountRepository.GetById(id);
-            if (b is null) return NotFound();
-            b.Deposit(amount);
-            await _accountRepository.Update(b);
-            return AcceptedAtAction(nameof(GetUser),
-                new { id = b.Id },
-                b);
+            var account = await _accountRepository.GetByAccount(accno);
+            if (account is null)
+                return NotFound();
+
+            account.Deposit(amount);
+
+            await _accountRepository.Update(account);
+            return AcceptedAtAction
+                (
+                nameof(GetUserAccount),
+                new { id = account.Id },
+                account
+                );
         }
-        [HttpPut("{id}/withdraw")]
-        public async Task<IActionResult> WithdrawMoney(Guid id, int amount)
+        [HttpPut("{accno}/withdraw")]
+        public async Task<IActionResult> WithdrawMoney(string accno, decimal amount)
         {
-            var b =await _accountRepository.GetById(id);
-            if (b is null) return NotFound();
+            var b = await _accountRepository.GetByAccount(accno);
+            if (b is null)
+                return NotFound();
+                 
             b.Withdraw(amount);
             await _accountRepository.Update(b);
-            return AcceptedAtAction(nameof(GetUser),
+            return AcceptedAtAction(nameof(GetUserAccount),
                 new { id = b.Id },
                 b);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/delete")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var bank = await _accountRepository.GetById(id);
@@ -77,5 +97,23 @@ namespace BankApplication.Api.Controller
 
 
         }
+        [HttpPut("transfer")]
+        public async Task<IActionResult> Transfer(string sourceAccountNumber, string destinationAccountNumber, int amount)
+        {
+            var sourceAccount = await _accountRepository.GetByAccount(sourceAccountNumber);
+            var destinationAccount = await _accountRepository.GetByAccount(destinationAccountNumber);
+            if (sourceAccount is null) return NotFound();
+            if (destinationAccount is null) return NotFound();
+
+            sourceAccount.Withdraw(amount);
+            destinationAccount.Deposit(amount);
+            await _accountRepository.Update(sourceAccount);
+            await _accountRepository.Update(destinationAccount);
+            return AcceptedAtAction(nameof(GetUserAccount),
+                new { id = sourceAccount.Id },
+                sourceAccount);
+        }
+
+
     }
 }

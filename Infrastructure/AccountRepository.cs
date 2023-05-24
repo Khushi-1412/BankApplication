@@ -28,7 +28,11 @@ namespace BankApplication.Infrastructure
                 return await _appDbContext.Banks.Where(b => b.Id == id).SingleOrDefaultAsync();
         }
 
-       
+        public async Task<BankAccount?> GetByAccount(string accountNumber)
+        {
+              return await _appDbContext.Banks.Where(b => b.AccountNumber== accountNumber).SingleOrDefaultAsync();
+        }
+
         public async Task<IEnumerable<BankAccount>> List()
         {
             return await _appDbContext.Banks
@@ -58,5 +62,7 @@ namespace BankApplication.Infrastructure
             await _appDbContext.SaveChangesAsync();
             
         }
+
+        
     }
 }
