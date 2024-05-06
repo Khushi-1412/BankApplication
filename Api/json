@@ -1,0 +1,122 @@
+{
+    "2024-04-01": {
+        "totalSuccessfulCalls": 5,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-02": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 2
+    },
+    "2024-04-03": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-04": {
+        "totalSuccessfulCalls": 4,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-05": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-06": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 3
+    },
+    "2024-04-07": {
+        "totalSuccessfulCalls": 0,
+        "totalUnsuccessfulCalls": 4
+    },
+    "2024-04-08": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-09": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-10": {
+        "totalSuccessfulCalls": 4,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-11": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 2
+    },
+    "2024-04-12": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-13": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-14": {
+        "totalSuccessfulCalls": 4,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-15": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-16": {
+        "totalSuccessfulCalls": 0,
+        "totalUnsuccessfulCalls": 3
+    },
+    "2024-04-17": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-18": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 2
+    },
+    "2024-04-19": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-20": {
+        "totalSuccessfulCalls": 4,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-21": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-22": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-23": {
+        "totalSuccessfulCalls": 0,
+        "totalUnsuccessfulCalls": 4
+    },
+    "2024-04-24": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-25": {
+        "totalSuccessfulCalls": 4,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-26": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 2
+    },
+    "2024-04-27": {
+        "totalSuccessfulCalls": 3,
+        "totalUnsuccessfulCalls": 0
+    },
+    "2024-04-28": {
+        "totalSuccessfulCalls": 2,
+        "totalUnsuccessfulCalls": 1
+    },
+    "2024-04-29": {
+        "totalSuccessfulCalls": 0,
+        "totalUnsuccessfulCalls": 3
+    },
+    "2024-04-30": {
+        "totalSuccessfulCalls": 1,
+        "totalUnsuccessfulCalls": 0
+    }
+}
