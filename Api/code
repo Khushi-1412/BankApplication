@@ -1,0 +1,74 @@
+// Function to fetch data from API
+function fetchDataFromAPI() {
+    // Replace 'response.json' with the actual API endpoint URL
+    return fetch('response.json')
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Failed to fetch data from API');
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            // Process the API response data
+            return data;
+        })
+        .catch(function(error) {
+            console.error('Error fetching data:', error);
+            // Handle error
+        });
+}
+
+// Function to determine the color based on successful and unsuccessful calls
+function getColorFromCalls(successfulCalls, unsuccessfulCalls) {
+    // Green if successfulCalls > 1 and unsuccessfulCalls < 1, else Red
+    if (successfulCalls > 1 && unsuccessfulCalls < 1) {
+        return "#00FF00"; // Green
+    } else {
+        return "#FF0000"; // Red
+    }
+}
+
+// Create the chart
+nv.addGraph(function() {
+    var chart = nv.models.discreteBarChart()
+        .margin({left: 100}) // Adjust margin as needed
+        .x(function(d) { return d.date }) // Specify x-axis accessor
+        .y(function(d) { return d.successfulCalls + d.unsuccessfulCalls }) // Specify y-axis accessor
+        .showValues(false) // Hide bar values
+        .color(function(d) { return getColorFromCalls(d.successfulCalls, d.unsuccessfulCalls) }) // Set bar colors based on calls
+        .forceY([0, 10]) // Force y-axis range
+        .showYAxis(true) // Show y-axis
+        .showXAxis(true); // Show x-axis
+        
+    chart.xAxis
+        .axisLabel("Date")
+        .tickFormat(function(d,i) {
+            // Return label for each day
+            return d3.time.format('%b %d')(new Date(d));
+        });
+
+    // Fetch data from API and update the chart
+    fetchDataFromAPI().then(function(apiData) {
+        // Process API data to get successful and unsuccessful calls for each day
+        var timeSeriesData = [];
+        var today = new Date();
+        for (var i = 0; i < 30; i++) {
+            var date = new Date(today);
+            date.setDate(today.getDate() - i);
+            var dateString = date.toISOString().split('T')[0];
+            var successfulCalls = apiData[dateString] ? apiData[dateString].totalSuccessfulCalls || 0 : 0;
+            var unsuccessfulCalls = apiData[dateString] ? apiData[dateString].totalUnsuccessfulCalls || 0 : 0;
+            timeSeriesData.push({ date: date, successfulCalls: successfulCalls, unsuccessfulCalls: unsuccessfulCalls });
+        }
+        timeSeriesData.reverse(); // Reverse the array to plot bars from oldest to newest
+
+        // Update chart with new data
+        d3.select('#chart svg')
+            .datum([{ key: "API Uptime/Downtime", values: timeSeriesData }])
+            .call(chart);
+    });
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+});
