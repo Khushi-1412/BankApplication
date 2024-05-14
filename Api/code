@@ -1,24 +1,25 @@
-public class ApiCaller {
-    private String baseUrl;
-    private String apiKey;
-    private String sharedSecret;
-    private String ipAddress;
+import java.util.zip.DataFormatException;
 
-    public ApiCaller(String baseUrl, String apiKey, String sharedSecret, String ipAddress) {
-        this.baseUrl = baseUrl;
-        this.apiKey = apiKey;
-        this.sharedSecret = sharedSecret;
-        this.ipAddress = ipAddress;
+public class ApiCaller {
+    private static class GeoPointServiceCaller extends GeoPointService {
+        public GdaResponse callGeoPointLookupWrapper(String baseUrl, String apiKey, String sharedSecret, String ipAddress) throws DataFormatException, Aconsele {
+            return super.callGeoPointLookup(baseUrl, apiKey, sharedSecret, ipAddress);
+        }
     }
 
     public void callApi() {
+        GeoPointServiceCaller serviceCaller = new GeoPointServiceCaller();
         try {
-            // Call the API
-            GdaResponse response = GeoPointService.callGeoPointLookup(baseUrl, apiKey, sharedSecret, ipAddress);
-            // Print the response to the console
-            System.out.println("API Response: " + response.toString());
+            // Replace "baseUrl", "apiKey", "sharedSecret", and "ipAddress" with actual values
+            String baseUrl = "your_base_url";
+            String apiKey = "your_api_key";
+            String sharedSecret = "your_shared_secret";
+            String ipAddress = "your_ip_address";
+
+            GdaResponse response = serviceCaller.callGeoPointLookupWrapper(baseUrl, apiKey, sharedSecret, ipAddress);
+            System.out.println("API Response: " + response);
         } catch (DataFormatException | Aconsele e) {
-            e.printStackTrace(); // Handle exceptions as needed
+            e.printStackTrace();
         }
     }
 }
