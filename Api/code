@@ -1,25 +1,202 @@
-import java.util.zip.DataFormatException;
+package com.quova.platform.portal.services.geopoint;
 
-public class ApiCaller {
-    private static class GeoPointServiceCaller extends GeoPointService {
-        public GdaResponse callGeoPointLookupWrapper(String baseUrl, String apiKey, String sharedSecret, String ipAddress) throws DataFormatException, Aconsele {
-            return super.callGeoPointLookup(baseUrl, apiKey, sharedSecret, ipAddress);
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+import com.quova.platform.api.client.exception.DataFormatException;
+import com.quova.platform.api.client.exception.ResourceNotFoundException;
+import com.quova.platform.api.client.exception.ServiceException;
+import com.quova.platform.portal.dto.geopoint.GdsResponse;
+
+/**
+ * Service to call GeoPoint API
+ *
+ * @author chenan
+ *
+ */
+@Service
+public class GeoPointService implements IGeoPointService {
+    
+    //For standard geo point service
+	@Value("${gp.api.baseUrl.std}")
+	private String stdBaseUrl;
+    
+	@Value("${gp.api.apikey.std}")
+	private String stdApiKey;
+    
+    @Value("${gp.api.sharedsecret.std}")
+    private String stdSharedSecret;
+    
+    //For geo point premium service
+    @Value("${gp.api.baseUrl.gpp}")
+	private String gppBaseUrl;
+    
+    @Value("${gp.api.apikey.gpp}")
+    private String gppApiKey;
+    
+    @Value("${gp.api.sharedsecret.gpp}")
+    private String gppSharedSecret;
+    
+    //For geo point ultra service
+    @Value("${gp.api.baseUrl.gpu}")
+	private String gpuBaseUrl;
+    
+    @Value("${gp.api.apikey.gpu}")
+    private String gpuApiKey;
+    
+    @Value("${gp.api.sharedsecret.gpu}")
+    private String gpuSharedSecret;
+    
+	@Autowired
+	private CloseableHttpClient httpClient;
+    
+	@Autowired
+	private GeoPointResponseHandler geoPointResponseHandler;
+    
+    private static final String ALGORITHM="MD5";
+    
+    private static final int THOUSAND = 1000;
+    
+	/**
+	 * Call the GeoPoint standard service.
+	 *
+	 * @param ipAddress
+	 *            The ip address to query
+	 * @return The GdsResponse ip info result
+	 * @throws DataFormatException
+	 *             Error in the uri, such as the ip address format
+	 * @throws AccessDeniedException
+	 * @throws ResourceNotFoundException
+	 *             No information for this ip. This is a common response.
+	 * @throws ServiceException
+	 *             An exception with the HTTP call itself, or 500 series server error
+	 */
+	@Override
+	public GdsResponse callStdLookup(String ipAddress) throws DataFormatException, AccessDeniedException,
+    ResourceNotFoundException, ServiceException {
+		return callGeoPointLookup(stdBaseUrl, stdApiKey, stdSharedSecret, ipAddress);
+	}
+    
+	/**
+	 * Call the GeoPoint premium (GPP) service.
+	 *
+	 * @param ipAddress
+	 *            The ip address to query
+	 * @return The GdsResponse ip info result
+	 * @throws DataFormatException
+	 *             Error in the uri, such as the ip address format
+	 * @throws AccessDeniedException
+	 * @throws ResourceNotFoundException
+	 *             No information for this ip. This is a common response.
+	 * @throws ServiceException
+	 *             An exception with the HTTP call itself, or 500 series server error
+	 */
+	@Override
+	public GdsResponse callGppLookup(String ipAddress) throws DataFormatException, AccessDeniedException,
+    ResourceNotFoundException, ServiceException {
+		return callGeoPointLookup(gppBaseUrl, gppApiKey, gppSharedSecret, ipAddress);
+	}
+    
+	/**
+	 * Call the GeoPoint ultra (GPU) service.
+	 *
+	 * @param ipAddress
+	 *            The ip address to query
+	 * @return The GdsResponse ip info result
+	 * @throws DataFormatException
+	 *             Error in the uri, such as the ip address format
+	 * @throws AccessDeniedException
+	 * @throws ResourceNotFoundException
+	 *             No information for this ip. This is a common response.
+	 * @throws ServiceException
+	 *             An exception with the HTTP call itself, or 500 series server error
+	 */
+	@Override
+	public GdsResponse callGpuLookup(String ipAddress) throws DataFormatException, AccessDeniedException,
+    ResourceNotFoundException, ServiceException {
+		return callGeoPointLookup(gpuBaseUrl, gpuApiKey, gpuSharedSecret, ipAddress);
+	}    
+    
+	/**
+	 * Call the GeoPoint service for either standard or premium.
+	 *
+	 * @param baseUrl
+	 *            The base url of the GDS API endpoint
+	 * @param ipAddress
+	 *            The ip address to query
+	 * @return The GdsResponse ip info result
+	 * @throws DataFormatException
+	 *             Error in the uri, such as the ip address format
+	 * @throws AccessDeniedException
+	 * @throws ResourceNotFoundException
+	 *             No information for this ip. This is a common response.
+	 * @throws ServiceException
+	 *             An exception with the HTTP call itself, or 500 series server error
+	 */
+	private GdsResponse callGeoPointLookup(String baseUrl, String apiKey, String sharedSecret, String ipAddress) throws DataFormatException, AccessDeniedException, ResourceNotFoundException, ServiceException {
+        String uri = "";
+        try{
+            uri = requestGenerator(baseUrl, apiKey, sharedSecret, ipAddress);
+        }catch(NoSuchAlgorithmException e){
+            throw new ServiceException(e);
         }
+        
+        HttpGet httpGet = new HttpGet(uri);
+        try{
+			GdsResponse gdsResponse = httpClient.execute(httpGet, geoPointResponseHandler);
+			return gdsResponse;
+            
+		}catch (IOException e) {
+			throw new ServiceException(e);
+		}finally {
+			httpGet.releaseConnection();
+		}
+        
+	}
+    
+	/*
+	 * Make it public/static so IPRService can reuse it
+	 */
+    public static String requestGenerator(String baseUrl, String apiKey, String sharedSecret, String ipAddress) throws NoSuchAlgorithmException{
+        StringBuilder finalReq = new StringBuilder();
+        
+        finalReq.append(baseUrl).append("/").append(ipAddress).append("?format=json&apikey=").append(apiKey);
+        
+        finalReq.append("&sig=").append(generateSignature(apiKey, sharedSecret));
+        
+        return finalReq.toString();
     }
-
-    public void callApi() {
-        GeoPointServiceCaller serviceCaller = new GeoPointServiceCaller();
-        try {
-            // Replace "baseUrl", "apiKey", "sharedSecret", and "ipAddress" with actual values
-            String baseUrl = "your_base_url";
-            String apiKey = "your_api_key";
-            String sharedSecret = "your_shared_secret";
-            String ipAddress = "your_ip_address";
-
-            GdaResponse response = serviceCaller.callGeoPointLookupWrapper(baseUrl, apiKey, sharedSecret, ipAddress);
-            System.out.println("API Response: " + response);
-        } catch (DataFormatException | Aconsele e) {
-            e.printStackTrace();
+    
+    /*
+	 * Make it public/static so IPRService can reuse it
+	 */
+    public static String generateSignature(String apiKey, String sharedSecret) throws NoSuchAlgorithmException{
+        long timestamp = System.currentTimeMillis() / THOUSAND;
+        MessageDigest md = null;
+        
+        md = MessageDigest.getInstance(ALGORITHM); //might throws NoSuchAlgorithmException
+        
+        md.update(apiKey.getBytes());
+        md.update(sharedSecret.getBytes());
+        md.update((new Long(timestamp)).toString().getBytes());
+        
+        byte[] byteData = md.digest();
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < byteData.length; i ++){
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
         }
+        
+        return sb.toString();
     }
+    
+    
 }
