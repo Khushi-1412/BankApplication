@@ -1,1 +1,29 @@
+// HealthCheckService.java
+package com.quova.platform.portal.services.geopoint;
+
+import com.quova.platform.portal.dto.geopoint.GdsResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class HealthCheckService {
+
+    private final GeoPointService geoPointService;
+
+    @Autowired
+    public HealthCheckService(GeoPointService geoPointService) {
+        this.geoPointService = geoPointService;
+    }
+
+    public GdsResponse performHealthCheck(String ipAddress) {
+        try {
+            // Use the GeoPointService to call the GPU lookup function
+            return geoPointService.callGpuLookup(ipAddress);
+        } catch (Exception e) {
+            // Handle exceptions appropriately
+            e.printStackTrace();
+            return null; // Or return a custom error response
+        }
+    }
+}
 
