@@ -1,29 +1,29 @@
-// HealthCheckService.java
-package com.quova.platform.portal.services.geopoint;
+package com.quova.platform.portal.controllers;
 
 import com.quova.platform.portal.dto.geopoint.GdsResponse;
+import com.quova.platform.portal.services.geopoint.HealthCheckService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
-public class HealthCheckService {
+@RestController
+@RequestMapping("/health")
+public class HealthCheckController {
 
-    private final GeoPointService geoPointService;
+    private final HealthCheckService healthCheckService;
+
+    // Constant for default IP address
+    private static final String DEFAULT_IP_ADDRESS = "4.2.2.2";
 
     @Autowired
-    public HealthCheckService(GeoPointService geoPointService) {
-        this.geoPointService = geoPointService;
+    public HealthCheckController(HealthCheckService healthCheckService) {
+        this.healthCheckService = healthCheckService;
     }
 
-    public GdsResponse performHealthCheck(String ipAddress) {
-        try {
-            // Use the GeoPointService to call the GPU lookup function
-            return geoPointService.callGpuLookup(ipAddress);
-        } catch (Exception e) {
-            // Handle exceptions appropriately
-            e.printStackTrace();
-            return null; // Or return a custom error response
-        }
+    @GetMapping("/gpu")
+    public GdsResponse performHealthCheck() {
+        // Call the performHealthCheck method with the default IP address
+        return healthCheckService.performHealthCheck(DEFAULT_IP_ADDRESS);
     }
 }
-
