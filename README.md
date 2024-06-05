@@ -18,7 +18,10 @@ public class CallService {
             Aggregation.match(
                 Criteria.where("licenseKey").is(licenseKey)
                     .and("startDate").gte(startDate).lte(endDate)
-            ),
+            ),Aggregation.project()
+                .and(DateOperators.dateOf("startDate").toString("%Y-%m-%d")).as("formattedDate")
+                .andInclude("callStatusSuccessful")
+                .andExpression("callStatusBlocked + callStatusOther").as("unsuccessfulCalls"),
             Aggregation.group(
                 Aggregation.dateAsFormattedString("startDate", "%Y-%m-%d")
             )
