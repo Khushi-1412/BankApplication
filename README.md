@@ -1,36 +1,36 @@
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-@Service
-public class CallService {
+@RestController
+public class CallController {
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private CallService callService;
 
-    public List<CallStats> getCallStats(String licenseKey, Date startDate, Date endDate) {
-        Aggregation aggregation = Aggregation.newAggregation(
-            Aggregation.match(
-                Criteria.where("licenseKey").is(licenseKey)
-                    .and("startDate").gte(startDate).lte(endDate)
-            ),Aggregation.project()
-                .and(DateOperators.dateOf("startDate").toString("%Y-%m-%d")).as("formattedDate")
-                .andInclude("callStatusSuccessful")
-                .andExpression("callStatusBlocked + callStatusOther").as("unsuccessfulCalls"),
-            Aggregation.group(
-                Aggregation.dateAsFormattedString("startDate", "%Y-%m-%d")
-            )
-            .sum("callStatusSuccessful").as("successfulCalls")
-            .sum(Aggregation.add("callStatusBlocked", "callStatusOther")).as("unsuccessfulCalls"),
-            Aggregation.sort(Aggregation.sort().descending("_id"))
-        );
+    private static final String CONSTANT_LICENSE_KEY = "BC";
 
-        AggregationResults<CallStats> results = mongoTemplate.aggregate(aggregation, "your_collection_name", CallStats.class);
-        return results.getMappedResults();
+    @GetMapping("/api/call-stats")
+    public Map<String, List<CallStats>> getCallStats(@RequestParam List<String> licenseKeys) {
+        Date startDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.DATE, 30);
+        Date endDate = calendar.getTime();
+
+        Map<String, List<CallStats>> results = new HashMap<>();
+
+        // Add constant license key stats
+        List<CallStats> constantKeyStats = callService.getCallStats(CONSTANT_LICENSE_KEY, startDate, endDate);
+        results.put(CONSTANT_LICENSE_KEY, constantKeyStats);
+
+        // Add dynamic license key stats
+        for (String licenseKey : licenseKeys) {
+            List<CallStats> stats = callService.getCallStats(licenseKey, startDate, endDate);
+            results.put(licenseKey, stats);
+        }
+        return results;
     }
 }
