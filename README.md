@@ -1,35 +1,33 @@
-To retrieve the aggregated data in reverse order, from the current date to the last month, you can add an additional `$sort` stage to the aggregation pipeline. Here's the modified pipeline:
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.stereotype.Service;
 
-```json
-[
-  {
-    "$match": {
-      "serviceId": /^220/,
-      "startDate": {
-        "$gte": new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        "$lte": new Date()
-      }
-    }
-  },
-  {
-    "$group": {
-      "_id": {
-        "year": { "$year": "$startDate" },
-        "month": { "$month": "$startDate" },
-        "day": { "$dayOfMonth": "$startDate" }
-      },
-      "totalSuccessfulCalls": { "$sum": "$callStatusSuccessful" },
-      "totalBlockedCalls": { "$sum": "$callStatusBlocked" }
-    }
-  },
-  {
-    "$sort": {
-      "_id.year": -1,
-      "_id.month": -1,
-      "_id.day": -1
-    }
-  }
-]
-```
+import java.util.Date;
+import java.util.List;
 
-In this pipeline, the additional `$sort` stage sorts the aggregated data in descending order based on the year, month, and day fields, effectively arranging the results from the current date to the last month
+@Service
+public class CallService {
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    public List<CallStats> getCallStats(String licenseKey, Date startDate, Date endDate) {
+        Aggregation aggregation = Aggregation.newAggregation(
+            Aggregation.match(
+                Criteria.where("licenseKey").is(licenseKey)
+                    .and("startDate").gte(startDate).lte(endDate)
+            ),
+            Aggregation.group(
+                Aggregation.dateAsFormattedString("startDate", "%Y-%m-%d")
+            )
+            .sum("callStatusSuccessful").as("successfulCalls")
+            .sum(Aggregation.add("callStatusBlocked", "callStatusOther")).as("unsuccessfulCalls"),
+            Aggregation.sort(Aggregation.sort().descending("_id"))
+        );
+
+        AggregationResults<CallStats> results = mongoTemplate.aggregate(aggregation, "your_collection_name", CallStats.class);
+        return results.getMappedResults();
+    }
+}
