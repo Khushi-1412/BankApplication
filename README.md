@@ -1,36 +1,65 @@
+To modify the provided Java code to return results in the format required by the `apihealthcheck` DTO, you'll need to adjust the aggregation pipeline and the result mapping. Here's the modified code:
+
+```java
+import com.mongodb.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.stereotype.Service;
+import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.*;
+@Service
+public class ApiUsageEntryService {
 
-@RestController
-public class CallController {
     @Autowired
-    private CallService callService;
+    private MongoOperations mongoOps;
 
-    private static final String CONSTANT_LICENSE_KEY = "BC";
+    private static final Logger logger = LoggerFactory.getLogger(ApiUsageEntryService.class);
 
-    @GetMapping("/api/call-stats")
-    public Map<String, List<CallStats>> getCallStats(@RequestParam List<String> licenseKeys) {
-        Date startDate = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.DATE, 30);
-        Date endDate = calendar.getTime();
+    public List<ApiHealthCheck> getAggregateUsage(String licenseKey, Date startDate, Date endDate) {
+        // Create our pipeline operations, first with the match
+        DBObject matchObj = new BasicDBObject("licenseKey", licenseKey);
+        DBObject dateRangeObj = new BasicDBObject("$gte", startDate);
+        dateRangeObj.put("$lte", endDate);
+        matchObj.put("startDate", dateRangeObj);
 
-        Map<String, List<CallStats>> results = new HashMap<>();
+        DBObject matchOp = new BasicDBObject("$match", matchObj);
 
-        // Add constant license key stats
-        List<CallStats> constantKeyStats = callService.getCallStats(CONSTANT_LICENSE_KEY, startDate, endDate);
-        results.put(CONSTANT_LICENSE_KEY, constantKeyStats);
+        // Group by date, sum the call counts
+        DBObject groupObj = new BasicDBObject("_id", "$startDate");
+        groupObj.put("successfulCalls", new BasicDBObject("$sum", "$callStatusSuccessful"));
+        groupObj.put("unsuccessfulCalls", new BasicDBObject("$sum", new BasicDBObject("$add", new Object[]{"$callStatusBlocked", "$callStatusOther"})));
 
-        // Add dynamic license key stats
-        for (String licenseKey : licenseKeys) {
-            List<CallStats> stats = callService.getCallStats(licenseKey, startDate, endDate);
-            results.put(licenseKey, stats);
+        DBObject groupOp = new BasicDBObject("$group", groupObj);
+
+        // Sort by _id descending
+        DBObject sortOp = new BasicDBObject("$sort", new BasicDBObject("_id", -1));
+
+        // Run the aggregation
+        AggregationOutput output = mongoOps.getCollection("apiUsageEntry").aggregate(matchOp, groupOp, sortOp);
+        logger.trace("MongoDB aggregation result: {}", output.getCommandResult());
+
+        // Convert the result to ApiHealthCheck objects
+        List<ApiHealthCheck> healthChecks = new ArrayList<>();
+        for (DBObject result : output.results()) {
+            ApiHealthCheck healthCheck = new ApiHealthCheck();
+            healthCheck.setDate((Date) result.get("_id"));
+            healthCheck.setSuccessfulCalls((int) result.get("successfulCalls"));
+            healthCheck.setUnsuccessfulCalls((int) result.get("unsuccessfulCalls"));
+            healthChecks.add(healthCheck);
         }
-        return results;
+
+        return healthChecks;
     }
 }
+```
+
+In this modified code:
+
+1. The `getAggregateUsage` method now returns a list of `ApiHealthCheck` objects instead of a single `ApiUsageEntry` object.
+2. The aggregation pipeline groups documents by the `startDate` field and calculates the sum of successful and unsuccessful calls.
+3. Each result from the aggregation is mapped to an `ApiHealthCheck` object, which represents the required fields: date, successful calls, and unsuccessful calls.
+4. The method returns a list of `ApiHealthCheck` objects containing the aggregated data.
