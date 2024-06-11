@@ -1,65 +1,180 @@
-To modify the provided Java code to return results in the format required by the `apihealthcheck` DTO, you'll need to adjust the aggregation pipeline and the result mapping. Here's the modified code:
+define([
+    "text!templates/healthCheckPage.html",
+    "jquery",
+    "underscore",
+    "d3",
+    "nvd3",
+    "backbone"
+], function(healthCheckPage) {
+	    var dataGPU = {
+					"2024-05-15": { "successfulcalls": 48, "unsuccessfulcalls": 2 },
+					"2024-05-14": { "successfulcalls": 25, "unsuccessfulcalls": 25 },
+					"2024-05-13": { "successfulcalls": 17, "unsuccessfulcalls": 33 },
+					"2024-05-12": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-05-10": { "successfulcalls": 45, "unsuccessfulcalls": 5 },
+					"2024-05-09": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-17": { "successfulcalls": 10, "unsuccessfulcalls": 40 },
+					"2024-05-07": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-04-20": { "successfulcalls": 23, "unsuccessfulcalls": 27 },
+					"2024-04-23": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-25": { "successfulcalls": 28, "unsuccessfulcalls": 22 },
 
-```java
-import com.mongodb.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.stereotype.Service;
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.List;
+				};
+				 var dataGPP = {
+					"2024-05-15": { "successfulcalls": 48, "unsuccessfulcalls": 2 },
+					"2024-05-14": { "successfulcalls": 25, "unsuccessfulcalls": 25 },
+					"2024-05-13": { "successfulcalls": 17, "unsuccessfulcalls": 33 },
+					"2024-05-12": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-05-10": { "successfulcalls": 45, "unsuccessfulcalls": 5 },
+					"2024-05-09": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-17": { "successfulcalls": 10, "unsuccessfulcalls": 40 },
+					"2024-05-07": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-04-20": { "successfulcalls": 23, "unsuccessfulcalls": 27 },
+					"2024-04-23": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-25": { "successfulcalls": 28, "unsuccessfulcalls": 22 },
 
-@Service
-public class ApiUsageEntryService {
+				};
+				 var dataGPS= {
+					"2024-05-15": { "successfulcalls": 48, "unsuccessfulcalls": 2 },
+					"2024-05-14": { "successfulcalls": 25, "unsuccessfulcalls": 25 },
+					"2024-05-13": { "successfulcalls": 17, "unsuccessfulcalls": 33 },
+					"2024-05-12": { "successfulcalls": 31, "unsuccessfulcalls": 40 },
+					"2024-05-10": { "successfulcalls": 45, "unsuccessfulcalls": 5 },
+					"2024-05-09": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-17": { "successfulcalls": 10, "unsuccessfulcalls": 40 },
+					"2024-05-07": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-04-20": { "successfulcalls": 23, "unsuccessfulcalls": 27 },
+					"2024-04-23": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-25": { "successfulcalls": 28, "unsuccessfulcalls": 22 },
 
-    @Autowired
-    private MongoOperations mongoOps;
+				};
+				 var dataIPR = {
+					"2024-05-15": { "successfulcalls": 48, "unsuccessfulcalls": 2 },
+					"2024-05-14": { "successfulcalls": 25, "unsuccessfulcalls": 25 },
+					"2024-04-28": { "successfulcalls": 5, "unsuccessfulcalls": 45 },
+					"2024-05-12": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-05-10": { "successfulcalls": 45, "unsuccessfulcalls": 5 },
+					"2024-05-09": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-17": { "successfulcalls": 10, "unsuccessfulcalls": 40 },
+					"2024-05-07": { "successfulcalls": 35, "unsuccessfulcalls": 15 },
+					"2024-04-20": { "successfulcalls": 23, "unsuccessfulcalls": 27 },
+					"2024-04-23": { "successfulcalls": 30, "unsuccessfulcalls": 20 },
+					"2024-04-25": { "successfulcalls": 28, "unsuccessfulcalls": 22 },
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiUsageEntryService.class);
+				};
 
-    public List<ApiHealthCheck> getAggregateUsage(String licenseKey, Date startDate, Date endDate) {
-        // Create our pipeline operations, first with the match
-        DBObject matchObj = new BasicDBObject("licenseKey", licenseKey);
-        DBObject dateRangeObj = new BasicDBObject("$gte", startDate);
-        dateRangeObj.put("$lte", endDate);
-        matchObj.put("startDate", dateRangeObj);
+    IPI.Portal.Views.HealthCheckPage = Backbone.View.extend({
+		
+        template: _.template(healthCheckPage),
 
-        DBObject matchOp = new BasicDBObject("$match", matchObj);
+       initialize: function() {
+		document.addEventListener('visibilitychange', () => {
+   console.log(document.visibilityState);
+   window.dispatchEvent(new Event('resize'));
+});
+        /*   $('a[href="#healthcheck"]').on('click', function() {
+                window.location.reload(true);
+                console.log("initialize graph");
+               
+            }.bind(this));*/
+        },
+        
 
-        // Group by date, sum the call counts
-        DBObject groupObj = new BasicDBObject("_id", "$startDate");
-        groupObj.put("successfulCalls", new BasicDBObject("$sum", "$callStatusSuccessful"));
-        groupObj.put("unsuccessfulCalls", new BasicDBObject("$sum", new BasicDBObject("$add", new Object[]{"$callStatusBlocked", "$callStatusOther"})));
+        render: function() {
+            var self = this;
+            console.log("rendering start");
+            self.$el.html(this.template());
+            console.log("rendering graphs");
 
-        DBObject groupOp = new BasicDBObject("$group", groupObj);
+            this.rendergraph('gpp-chart', dataGPP);
+            this.rendergraph('gpu-chart', dataGPU);
+            this.rendergraph('gps-chart', dataGPS);
+            this.rendergraph('ipr-chart', dataIPR);
 
-        // Sort by _id descending
-        DBObject sortOp = new BasicDBObject("$sort", new BasicDBObject("_id", -1));
+            console.log("Finished rendering");
+            return this;
+        },
 
-        // Run the aggregation
-        AggregationOutput output = mongoOps.getCollection("apiUsageEntry").aggregate(matchOp, groupOp, sortOp);
-        logger.trace("MongoDB aggregation result: {}", output.getCommandResult());
+        rendergraph: function(chartId, dataApi) {
+            nv.addGraph(function() {
+				function generateTimeSeriesData() {
+                    var today = new Date();
+                    var timeSeriesData = [];
+                    for (var i = 0; i < 30; i++) {
+                        var date = new Date(today);
+                        date.setDate(today.getDate() - i);
+                        var options = { month: 'long', day: 'numeric', year: 'numeric' };
+                        var dateString = date.toLocaleDateString('en-US', options);
+                        var apiData = dataApi[date.toISOString().split('T')[0]] || { successfulcalls: 50, unsuccessfulcalls: 4 };
+                        timeSeriesData.push({ date: dateString, successfulcalls: apiData.successfulcalls, unsuccessfulcalls: apiData.unsuccessfulcalls });
+                    }
+                    return timeSeriesData.reverse();
+                }
+            
 
-        // Convert the result to ApiHealthCheck objects
-        List<ApiHealthCheck> healthChecks = new ArrayList<>();
-        for (DBObject result : output.results()) {
-            ApiHealthCheck healthCheck = new ApiHealthCheck();
-            healthCheck.setDate((Date) result.get("_id"));
-            healthCheck.setSuccessfulCalls((int) result.get("successfulCalls"));
-            healthCheck.setUnsuccessfulCalls((int) result.get("unsuccessfulCalls"));
-            healthChecks.add(healthCheck);
-        }
+                function getColorFromDate(successfulcalls, unsuccessfulcalls) {
+                    if (successfulcalls > unsuccessfulcalls) {
+                        return "#5daf5f"; // green
+                    } else if (Math.abs(unsuccessfulcalls - successfulcalls) <10) {
+                        return "#E6CE66"; // yellow
+                    } else {
+                        return "#FF0000"; // red
+                    }
+                }
+				
+                var timeSeriesData = generateTimeSeriesData();
+				
+                var chart = nv.models.discreteBarChart()
+                    .margin({ left: 100 })
+                    .x(function(d) { return d.date })
+                    .y(function(d) { return 1; })
+                    .showValues(false)
+                    .color(function(d) { return getColorFromDate(d.successfulcalls, d.unsuccessfulcalls) })
+                    .forceY([0, 1])
+                    .showYAxis(false)
+                    .showXAxis(false)
+                    .width(900)
+                    
+                    .tooltipContent(function(key, x, y, e, graph) {
+                        return '<h3>' + x + '</h3>' +
+                            '<p>' + " Success Rate: " + ((e.point.successfulcalls / (e.point.successfulcalls + e.point.unsuccessfulcalls)) * 100).toFixed(2) + "%" + '</p>' +
+                            '<p>' + " Failure Rate: " + ((e.point.unsuccessfulcalls / (e.point.successfulcalls + e.point.unsuccessfulcalls)) * 100).toFixed(2) + "%" + '</p>'
+                    });
+                    
+                
+                
 
-        return healthChecks;
-    }
-}
-```
+                d3.select('#' + chartId + ' svg')
+                    .datum([{ key: "API Uptime/Downtime", values: timeSeriesData }])
+                    .call(chart);
 
-In this modified code:
+                d3.select('#' + chartId + ' svg')
+                    .append("text")
+                    .attr("x", 115)
+                    .attr("y", 90)
+                    .style("text-anchor", "middle")
+                    .text("30 days ago")
+                    .attr("class", "x-axis label");
 
-1. The `getAggregateUsage` method now returns a list of `ApiHealthCheck` objects instead of a single `ApiUsageEntry` object.
-2. The aggregation pipeline groups documents by the `startDate` field and calculates the sum of successful and unsuccessful calls.
-3. Each result from the aggregation is mapped to an `ApiHealthCheck` object, which represents the required fields: date, successful calls, and unsuccessful calls.
-4. The method returns a list of `ApiHealthCheck` objects containing the aggregated data.
+                d3.select('#' + chartId + ' svg')
+                    .append("text")
+                    .attr("x", 880)
+                    .attr("y", 90)
+                    .style("text-anchor", "middle")
+                    .text("Today")
+                    .attr("class", "x-axis label");
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+            }
+
+
+
+
+	});
+
+});
+
+
