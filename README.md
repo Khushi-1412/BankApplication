@@ -1,29 +1,54 @@
-import json
-from random import randint
-from datetime import datetime, timedelta
+public class ServiceHealthCheckDTO {
+    private String service;
+    private String date;
+    private Metrics metrics;
 
-# List of services
-services = ["gpp", "gps", "gpu", "gds"]
+    // Getters and setters
 
-# Generate random metrics for a day
-def generate_metrics():
-    return {
-        "successfulcalls": randint(10, 50),
-        "unsuccessfulcalls": randint(0, 40)
+    public String getService() {
+        return service;
     }
 
-# Generate data for 30 days for each service
-data = []
-for service in services:
-    for i in range(30):
-        date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-        metrics = generate_metrics()
-        data.append({
-            "service": service,
-            "date": date,
-            "metrics": metrics
-        })
+    public void setService(String service) {
+        this.service = service;
+    }
 
-# Convert data to JSON and print
-json_data = json.dumps(data, indent=4)
-print(json_data)
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Metrics getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(Metrics metrics) {
+        this.metrics = metrics;
+    }
+
+    public static class Metrics {
+        private int successfulcalls;
+        private int unsuccessfulcalls;
+
+        // Getters and setters
+
+        public int getSuccessfulcalls() {
+            return successfulcalls;
+        }
+
+        public void setSuccessfulcalls(int successfulcalls) {
+            this.successfulcalls = successfulcalls;
+        }
+
+        public int getUnsuccessfulcalls() {
+            return unsuccessfulcalls;
+        }
+
+        public void setUnsuccessfulcalls(int unsuccessfulcalls) {
+            this.unsuccessfulcalls = unsuccessfulcalls;
+        }
+    }
+}
