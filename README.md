@@ -1,7 +1,66 @@
+splunk.host=splunk.example.com
+splunk.port=8089
+splunk.username=your-username
+splunk.password=your-password
+
+------------------
+
+package com.example.splunkboot.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "splunk")
+public class SplunkConfigProperties {
+
+    private String host;
+    private int port;
+    private String username;
+    private String password;
+
+    // getters and setters
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+-----------------
+
+
 package com.example.splunkboot.service;
 
 import com.splunk.*;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.splunkboot.config.SplunkConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -13,27 +72,21 @@ import java.util.Map;
 @Service
 public class SplunkService {
 
-    private final String splunkUrl;
-    private final String username;
-    private final String password;
+    private final SplunkConfigProperties splunkConfigProperties;
     private Service splunkService;
 
-    public SplunkService(
-            @Value("${splunk.url}") String splunkUrl,
-            @Value("${splunk.username}") String username,
-            @Value("${splunk.password}") String password) {
-        this.splunkUrl = splunkUrl;
-        this.username = username;
-        this.password = password;
+    @Autowired
+    public SplunkService(SplunkConfigProperties splunkConfigProperties) {
+        this.splunkConfigProperties = splunkConfigProperties;
     }
 
     @PostConstruct
     public void init() {
         ServiceArgs loginArgs = new ServiceArgs();
-        loginArgs.setHost(getHostFromUrl(splunkUrl));
-        loginArgs.setPort(getPortFromUrl(splunkUrl));
-        loginArgs.setUsername(username);
-        loginArgs.setPassword(password);
+        loginArgs.setUsername(splunkConfigProperties.getUsername());
+        loginArgs.setPassword(splunkConfigProperties.getPassword());
+        loginArgs.setHost(splunkConfigProperties.getHost());
+        loginArgs.setPort(splunkConfigProperties.getPort());
 
         splunkService = Service.connect(loginArgs);
     }
@@ -66,13 +119,34 @@ public class SplunkService {
 
         return results;
     }
+}
 
-    private String getHostFromUrl(String url) {
-        return url.split("://")[1].split(":")[0];
+--------------------
+package com.example.splunkboot.controller;
+
+import com.example.splunkboot.service.SplunkService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/splunk")
+public class SplunkController {
+
+    private final SplunkService splunkService;
+
+    @Autowired
+    public SplunkController(SplunkService splunkService) {
+        this.splunkService = splunkService;
     }
 
-    private int getPortFromUrl(String url) {
-        String[] parts = url.split("://")[1].split(":");
-        return parts.length > 1 ? Integer.parseInt(parts[1].split("/")[0]) : 8089; // Default port
+    @GetMapping("/search")
+    public List<Map<String, String>> search() {
+        String query = "index=exm_apim_prod response_mainpart size=\"*\" | stats count(eval(response_http_status)) AS Hits BY response_http_status";
+        return splunkService.search(query);
     }
 }
