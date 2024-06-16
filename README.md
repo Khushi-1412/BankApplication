@@ -1,34 +1,20 @@
-package com.example.splunkboot.controller;
+# Server port
+server.port=8080
 
-import biz.neustar.ipi.platform.ipiadmin.services.apiproxy.SplunkClient;
-import biz.neustar.ipi.platform.ipiadmin.services.apiproxy.dto.ApiHealthcheck;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+# Logging configuration
+logging.level.root=INFO
+logging.level.org.springframework=INFO
+logging.level.com.example.splunkboot=DEBUG
+logging.file=splunkboot.log
 
-import java.util.List;
+# Splunk configuration
+splunk.base-url=http://your-splunk-url
+splunk.api-port=8089
+splunk.api-user=admin
+splunk.api-password=admin
+splunk.search-host=your-search-host
+splunk.search-index=your-search-index
+splunk.search-log=your-search-log
 
-@RestController
-public class SplunkController {
-
-    private final SplunkClient splunkClient;
-
-    @Autowired
-    public SplunkController(SplunkClient splunkClient) {
-        this.splunkClient = splunkClient;
-    }
-
-    @GetMapping("/api/healthcheck")
-    public List<ApiHealthcheck> getApiHealthcheck() {
-        DateTime endDate = DateTime.now();
-        DateTime startDate = endDate.minusMinutes(30);
-
-        try {
-            return splunkClient.getApiHealthcheckData(startDate, endDate);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-}
+# Splunk thread count
+splunk.search.thread=5
