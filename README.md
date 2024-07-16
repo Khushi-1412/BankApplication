@@ -1,37 +1,36 @@
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+Service service = null;
+        try {
+            // Set up login parameters
+            ServiceArgs loginArgs = new ServiceArgs();
+            loginArgs.setHost(HOST);
+            loginArgs.setPort(PORT);
+            loginArgs.setScheme(SCHEME);
+            loginArgs.setToken(TOKEN);
 
-public class SplunkService {
+            // Initialize the SDK client
+            service = Service.connect(loginArgs);
 
-    private final String splunkUrl = "https://your-splunk-url:port";
-    private final String accessToken = "your-access-token";
+            // Perform a search query
+            Job job = service.getJobs().create("search index=_internal | head 1");
 
-    public String querySplunk(String searchQuery) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            // Wait for the search to finish
+            job.waitForCompletion();
 
-        HttpEntity<String> entity = new HttpEntity<>(searchQuery, headers);
+            // Print out the results
+            ResultsReaderXml resultsReader = new ResultsReaderXml(job.getResults());
+            ResultsReader.Xml resultMap;
+            while ((resultMap = resultsReader.getNextEvent()) != null) {
+                for (String key : resultMap.keySet()) {
+                    System.out.println(key + ": " + resultMap.get(key));
+                }
+            }
 
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(
-                splunkUrl + "/services/search/jobs/export",
-                HttpMethod.POST,
-                entity,
-                String.class
-        );
-
-        return response.getBody();
-    }
-
-    public static void main(String[] args) {
-        SplunkService splunkService = new SplunkService();
-        
-        // Example query: Retrieve the first 10 results from index=main
-        String searchQuery = "search index=main | head 10";
-        String result = splunkService.querySplunk(searchQuery);
-        
-        System.out.println("Response from Splunk:");
-        System.out.println(result);
-    }
-}
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Always close the service when done
+            if (service != null) {
+                service.logout();
+            }
+        }
+    
