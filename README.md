@@ -1,36 +1,52 @@
-Service service = null;
-        try {
-            // Set up login parameters
-            ServiceArgs loginArgs = new ServiceArgs();
-            loginArgs.setHost(HOST);
-            loginArgs.setPort(PORT);
-            loginArgs.setScheme(SCHEME);
-            loginArgs.setToken(TOKEN);
+public class SplunkLogin {
 
-            // Initialize the SDK client
-            service = Service.connect(loginArgs);
+    static Service service = null;
 
-            // Perform a search query
-            Job job = service.getJobs().create("search index=_internal | head 1");
+    /**
+     * Authentication Token.
+     * Actual token length would be longer than this token length.
+     */
+    static String token = "1k_Ostpl6NBe4iVQ5d6I3Ohla_U5";
+    
+    public static void main(String args[]) {
+        // Initialize the SDK client
+        connectToSplunk();
+        
+        // Define your search query
+        String query = "search index=your_index_name sourcetype=your_sourcetype | stats count by field_name";
 
-            // Wait for the search to finish
-            job.waitForCompletion();
+        // Run the search query
+        runSearchQuery(query);
+    }
 
-            // Print out the results
-            ResultsReaderXml resultsReader = new ResultsReaderXml(job.getResults());
-            ResultsReader.Xml resultMap;
-            while ((resultMap = resultsReader.getNextEvent()) != null) {
-                for (String key : resultMap.keySet()) {
-                    System.out.println(key + ": " + resultMap.get(key));
+    private static void connectToSplunk() {
+        ServiceArgs loginArgs = new ServiceArgs();
+        loginArgs.setPort(8089);
+        loginArgs.setHost("localhost");
+        loginArgs.setScheme("https");
+        loginArgs.setToken(String.format("Bearer %s", token));
+
+        service = Service.connect(loginArgs);
+    }
+
+    private static void runSearchQuery(String query) {
+        JobArgs jobArgs = new JobArgs();
+        jobArgs.setExecutionMode(JobArgs.ExecutionMode.BLOCKING);
+        
+        // Create a job to run the query
+        Job job = service.getJobs().create(query, jobArgs);
+        
+        // Retrieve results
+        try (InputStream resultsStream = job.getResults()) {
+            ResultsReaderJson resultsReader = new ResultsReaderJson(resultsStream);
+            Map<String, String> event;
+            while ((event = resultsReader.getNextEvent()) != null) {
+                for (Map.Entry<String, String> entry : event.entrySet()) {
+                    System.out.println(entry.getKey() + ": " + entry.getValue());
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            // Always close the service when done
-            if (service != null) {
-                service.logout();
-            }
         }
-    
+    }
+}
