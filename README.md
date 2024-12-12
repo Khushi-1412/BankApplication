@@ -36,8 +36,8 @@ public class SplunkLogin {
         // Create a job to run the query
         Job job = service.getJobs().create(query, jobArgs);
         
-        // Retrieve results
-        try (InputStream resultsStream = job.getResults()) {
+        // Re
+        try (Inpu resultsStream = job.getResults()) {
             ResultsReaderJson resultsReader = new ResultsReaderJson(resultsStream);
             Map<String, String> event;
             while ((event = resultsReader.getNextEvent()) != null) {
@@ -47,6 +47,20 @@ public class SplunkLogin {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-}
+
+
+
+------------------
+
+I Say What I Need to Say
+While working on the “Add Customers List” feature, there were many open questions regarding the database and the current customer list. I ensured effective communication by raising these concerns and seeking clarification. I proactively spoke up to understand the requirements and resolve any uncertainties,
+
+
+
+I Own It
+While working on the feature for color transformation across the application, I took full ownership of the task. I ensured that all color changes were consistent and aligned with the project requirements. I proactively identified areas where the color scheme needed to be updated and worked efficiently to complete the transformation across all applications. 
+
+
+
+I Think Like a Customer
+I prioritized the customer experience by identifying and addressing inconsistencies. For instance, I noticed discrepancies in the application’s color codes during the migration and worked with the product team to standardize them, ensuring a cohesive and user-friendly interface.
