@@ -67,4 +67,14 @@ I prioritized the customer experience by identifying and addressing inconsistenc
 
 
 
+
+
+
+In 2024, transitioning to a new team was initially challenging but allowed me to expand my technical skills by working with Java and SpringBoot. I gained valuable experience with JavaScript, contributing to both frontend and backend development. I also familiarized myself with the customer and admin portal codebase and had the opportunity to explore the various types of customers our application supports. I contributed to key features such as the Gpod Healthcheck Dashboard, the ForgeRock-to-Ping migration, and the “Add Customers List” feature.
+
+Additionally, I completed a LinkedIn Learning course in the Full Stack Developer path, which has laid a strong foundation for my growth.
+
+Looking ahead to 2025, I am excited to deepen my knowledge in frontend technologies, particularly React, and further explore cloud technologies, especially AWS. I plan to achieve these goals by enrolling in relevant courses, obtaining certifications, and contributing more to team projects as new opportunities arise.
+
+---
 I worked on the ForgeRock to Ping migration, ensuring I met the PI commitments and completed tasks as quickly as possible. I successfully resolved all the bugs assigned to me within the given deadlines for the migration project. Additionally, I provided support to the team whenever needed, contributing to the overall success of the project.
