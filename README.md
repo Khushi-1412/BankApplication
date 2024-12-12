@@ -64,3 +64,7 @@ While working on the feature for color transformation across the application, I 
 
 I Think Like a Customer
 I prioritized the customer experience by identifying and addressing inconsistencies. For instance, I noticed discrepancies in the application’s color codes during the migration and worked with the product team to standardize them, ensuring a cohesive and user-friendly interface.
+
+
+
+I worked on the ForgeRock to Ping migration, ensuring I met the PI commitments and completed tasks as quickly as possible. I successfully resolved all the bugs assigned to me within the given deadlines for the migration project. Additionally, I provided support to the team whenever needed, contributing to the overall success of the project.
